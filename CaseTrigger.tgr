@@ -1,0 +1,11 @@
+trigger CaseTrigger on Case (before insert,before delete,before update) {
+    
+    if(Trigger.Isbefore)
+    {
+        if(Trigger.Isdelete)
+        {
+            CaseTriggerHelperclass.CaseTriggerHelper(Trigger.Old);
+        }
+    }
+
+}
