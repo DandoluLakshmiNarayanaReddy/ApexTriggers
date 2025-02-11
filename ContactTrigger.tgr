@@ -1,0 +1,31 @@
+trigger ContactTrigger on Contact (before insert,After Insert,before Update,After update) {
+    
+    if(Trigger.isInsert)
+    {
+        if(Trigger.isbefore)
+        {
+            ContactTriggerHelperclass.ContactTriggerBeforeInsert(Trigger.New);
+        }
+        if(Trigger.IsAfter)
+        {
+            //ContactTriggerHelperclass.ContactTriggerAfterInsert(Trigger.New);
+            ContactTriggerHelperclass.CreateNLocations(Trigger.New,null);
+            
+        }
+    }
+    if(Trigger.IsUpdate)
+    {
+            if(Trigger.isbefore)
+        {
+            System.debug(Trigger.Old);
+            System.debug(Trigger.New);
+        }
+        if(Trigger.isAfter)
+        {
+            ContactTriggerHelperclass.ContactTriggerBeforeUpdate(Trigger.New, Trigger.OldMap);
+             ContactTriggerHelperclass.CreateNLocations(Trigger.New,Trigger.OldMap);
+        }
+    }
+
+
+}

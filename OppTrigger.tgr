@@ -1,0 +1,23 @@
+trigger OppTrigger on Opportunity (before insert,before update,after insert,After Update,After delete) {
+    
+    if(Trigger.Isupdate)   
+        
+    {
+        if(Trigger.IsAfter){
+        TriggerHandlerOnOpportunity.TriggerHandlerOpportunityAfterUpdate(Trigger.New);
+            
+        TriggerHandlerOnOpportunity.TriggerHandlerOpportunityNotifyEveryone(Trigger.New,Trigger.OldMap);
+        }
+        if(Trigger.Isbefore)
+        {
+            TriggerHandlerOnOpportunity.TriggerHandlerOpportunityBeforeUpdate(Trigger.New,Trigger.OldMap);
+        }
+   
+    }
+    if(Trigger.Isdelete & Trigger.isAfter)  
+    {
+       TriggerHandlerOnOpportunity.TriggerHandlerOpportunityAfterDelete(Trigger.Old);
+    }
+    
+
+}
