@@ -1,0 +1,23 @@
+trigger ClosedOpportunityTrigger on Opportunity (after insert, after update) {
+    
+    List<sObject> tsk=new List<sObject>();
+    if(Trigger.isInsert && Trigger.isUpdate)
+    {
+        for(Opportunity opp: Trigger.new)
+        {
+            if(opp.StageName=='Closed Won')
+            {
+                Task t=new Task();
+                t.Subject='Follow Up Test Task';
+                t.WhatId=opp.Id;
+                t.Status='In progress';
+                t.Priority='Normal';
+                t.WhoId='005bm000005qcsjAAA';
+                tsk.add(t);
+            }
+        }
+        
+    }
+    insert tsk;
+
+}
