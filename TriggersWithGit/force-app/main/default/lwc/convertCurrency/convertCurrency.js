@@ -18,7 +18,7 @@ export default class ConvertCurrency extends LightningElement {
         if(name==="tocurr") this.toCurrency=value;
         //this.currencyOptions=event.detail.value;
     }
-    async fetchSymbols()
+    async fetchSymbols() 
     {
         let endpoint=`https://api.frankfurter.dev/v1/currencies`;
         try{
