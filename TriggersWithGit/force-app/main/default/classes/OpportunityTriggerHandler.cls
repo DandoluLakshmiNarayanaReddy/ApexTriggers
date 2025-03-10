@@ -1,18 +1,27 @@
 public with sharing class OpportunityTriggerHandler {
 
+  public static boolean isExecuted = false;
     // When an Opportunity’s Stage changes:
     // 🔹 If Stage = "Closed Won", update all related Tasks' Status to "Completed".
     // 🔹 If Stage = "Closed Lost", update all related Tasks' Status to "In Progress". 
     public static void AfterUpdate(List<Opportunity> newopprecords, Map<Id,Opportunity> oldmap) {
 
-        Set<Id> oppids=new Set<Id>();
-        for(Opportunity opp:newopprecords)
-        {
-            if(opp.StageName=='Closed Won' || opp.StageName=='Closed Lost')
+
+      Set<Id> oppids=new Set<Id>();
+      if(!isExecuted)
+      {
+          isExecuted=True;
+ 
+         
+          
+            for(Opportunity opp:newopprecords)
             {
-               oppids.add(opp.Id);
-            }
-        }
+                if(opp.StageName=='Closed Won' || opp.StageName=='Closed Lost')
+                {
+                  oppids.add(opp.Id);
+                }
+          }
+          }
         List<Task> tasks=[Select Id,status, WhatId FROM Task Where WhatId IN: oppids];
         Map<Id,Opportunity> oppmap=new Map<Id,Opportunity>([Select Id,StageName FROM Opportunity Where Id IN: oppids]);
         List<Task> Updatedtasks=new List<Task>();
@@ -42,12 +51,18 @@ public with sharing class OpportunityTriggerHandler {
       {
         Set<Id> opIds=new Set<Id>();
         Set<Id> AccIds=new Set<Id>();
-        Map<Id,List<Opportunity>> MapofOps=new Map<Id,List<Opportunity>>();
-          for(Opportunity op:newRecords)
-          {
-             opIds.add(op.Id);
-             AccIds.add(op.AccountId);
+        if(!isExecuted)
+        {
+            isExecuted=True;
 
+         
+          Map<Id,List<Opportunity>> MapofOps=new Map<Id,List<Opportunity>>();
+            for(Opportunity op:newRecords)
+            {
+              opIds.add(op.Id);
+              AccIds.add(op.AccountId);
+
+            }
           }
           List<Account> acc=[SELECT Id,Name,TotalOps__c,(SELECT Id,Name,AccountId FROM Opportunities) FROM Account WHERE Id IN :AccIds];
          

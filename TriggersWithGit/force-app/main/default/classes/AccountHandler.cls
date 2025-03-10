@@ -5,18 +5,24 @@ public class AccountHandler {
 // 🔹 When checked, all related Opportunities with a probability > 70% should be automatically closed
 
 // Sounds simple? But how would you handle bulk processing efficiently? 🤔
-
+public static boolean isExecuted = false;
 
     public static void AfterUpdateCloseOpp(List<Account> newRecords) {
-        List<Opportunity> toUpdateOpp=new List<Opportunity>();
-        Set<Id> accIds=new Set<Id>();
-          for(Account acc:newRecords)
-          {
-            if(acc.CloseGoodOpportunities__c==TRUE)
+        List<Opportunity> toUpdateOpp=new List<Opportunity>(); 
+        if(!isExecuted)
+        {
+            isExecuted=True;
+
+
+           Set<Id> accIds=new Set<Id>();
+            for(Account acc:newRecords)
             {
-                accIds.add(acc.Id);
+                if(acc.CloseGoodOpportunities__c==TRUE)
+                {
+                    accIds.add(acc.Id);
+                }
             }
-          }
+        }
         List<Opportunity> Opts=[SELECT ID,NAME,AccountId,Probability,StageName FROM Opportunity WHERE AccountId IN: accIds];
         for(Opportunity opt:Opts)
         {

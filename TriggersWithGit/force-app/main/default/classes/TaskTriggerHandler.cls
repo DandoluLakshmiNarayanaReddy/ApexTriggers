@@ -1,25 +1,28 @@
 public with sharing class TaskTriggerHandler {
 
-    public static Boolean isTaskTriggerExecuted = false;
+    public static Set<Id> setExecutedRecord = new Set<Id>();
 
+    public static boolean isExecuted = false;
     
     // When all Tasks associated with an Opportunity are marked as ‘Completed’ 
     //and there are no Tasks in other statuses like ‘In Progress,’ ‘Not Started,’, ‘Deferred,’ or 'Waiting on someone else' the 
     // Opportunity Stage should automatically update to ‘Closed Won.’
     public static void AfterUpdate(List<Task> newRecords, Map<Id,Task> oldMap) {
 
-        if (isTaskTriggerExecuted) {
-            return; // Exit the method to prevent recursion
-        }
+       
         
         Set<Id> OpIds=new Set<Id>();
-       
-        for(Task t:newRecords)
+         if(!isExecuted)
         {
-            if(t.Status == 'Completed'){
-                if(t.WhatId.getSObjectType() == Opportunity.SObjectType){
-                    OpIds.add(t.WhatId);
-                }
+            isExecuted=True;
+      
+            for(Task t:newRecords)
+            {
+                    if(t.Status == 'Completed' && oldMap.get(t.Id).Status!=t.Status){
+                        if(t.WhatId.getSObjectType() == Opportunity.SObjectType){
+                            OpIds.add(t.WhatId);
+                        }
+                    }
             }
         }
         List<Opportunity> lops=[SELECT Id,Name,StageName,(SELECT Id,Status,WhatId FROM Tasks) FROM Opportunity WHERE Id IN:OpIds];
@@ -66,16 +69,58 @@ public with sharing class TaskTriggerHandler {
 // - Cold if the Task's Priority is "Low."
 
 
-    public static void UpdateAccountRating(List<Task> newRecords)
+    public static void UpdateAccountRating(List<Task> newRecords, Map<Id,Task> OldMap)
     {
-        Set<Id> AcIds=new Set<Id>();
-        for(Task t:newRecords)
+
+        Map<Id,String> acIdVSPr=new Map<Id,String>();
+        if(!isExecuted)
         {
-            if(t.WhatId!=NULL && t.Status!=NULL && String.valueOf(t.WhatId).startsWith('001'))
+            isExecuted=True;
+            Set<Id> AcIds=new Set<Id>();
+           
+            for(Task t:newRecords)
             {
-                AcIds.add(t.WhatId);
+                if(String.valueOf(t.WhatId).startsWith('001'))
+                {
+                    if(t.WhatId!=NULL && t.Status=='Completed')
+                    {
+                        System.debug('whatidadded');
+                        AcIds.add(t.WhatId);
+                        acIdVSPr.put(t.WhatId,t.Priority);
+                    }
+               }
+            
             }
         }
+        List<Account> accs=[SELECT Id,Name,Rating FROM Account WHERE Id IN:acIdVSPr.keySet()];
+        List<Account> accsTOUpdate=new List<Account>();
+        Set<Id> executedIds=new Set<Id>();
+        for(Account ac:accs)
+        {
+            System.debug('has accts');
+            if(acIdVSPr.get(ac.Id)=='High')
+            {
+                ac.Rating='Hot';
+            }
+           else if(acIdVSPr.get(ac.Id)=='Normal')
+            {
+                ac.Rating='Warm';
+            }
+           else
+            {
+                ac.Rating='Cold';
+            }
+            
+                accsTOUpdate.add(ac);
+        }
+        if(accsTOUpdate.size()>0)
+        {
+            System.debug('Executed');
+            update accsTOUpdate;
+        }
         
+
+
+
     }
-}
+} 
